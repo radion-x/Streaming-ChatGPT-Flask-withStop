@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
-    <title>OpenAI API Completions Streaming Response</title>
+    <title>Websited Streaming Assistant</title>
 </head>
 <body class="bg-black text-black min-h-screen flex items-center justify-center">
 <div class="lg:w-1/2 2xl:w-1/3 p-7 rounded-md bg-gray-100">
     <h1 class="text-xl font-bold mb-6">
-        Streaming OpenAI API Response (Flask)
+        Your AI Assistant
     </h1>
     <div id="resultContainer" class="mt-4 h-48 overflow-y-auto">
         <p id="user" class="border-dashed whitespace-pre-line"></p>
@@ -40,49 +40,55 @@
     </form>
 
     <script>
-            var promptForm = document.getElementById('prompt_form');
-            var resultContainer = document.getElementById('resultContainer');
+var promptForm = document.getElementById('prompt_form');
+var resultContainer = document.getElementById('resultContainer');
 
-            function addUserChat(prompt) {
-                var userMessageElement = document.createElement("p");
-                userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
-                userMessageElement.innerHTML = "<strong>You:</strong>" + " " + prompt;
-                resultContainer.appendChild(userMessageElement);
-            }
+function addUserChat(prompt) {
+    var userMessageElement = document.createElement("p");
+    userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
+    userMessageElement.innerHTML = "<strong>You:</strong>" + " " + prompt;
+    resultContainer.appendChild(userMessageElement);
+    scrollToBottom();
+}
 
-            promptForm.addEventListener('submit', async function(event) {
-                event.preventDefault();
+function scrollToBottom() {
+    resultContainer.scrollTop = resultContainer.scrollHeight;
+}
 
-                var prompt = promptForm.elements.prompt.value;
-                addUserChat(prompt);
+promptForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
 
-                var formData = new FormData(promptForm);
-                formData.append('prompt', prompt);
+    var prompt = promptForm.elements.prompt.value;
+    addUserChat(prompt);
 
-                promptForm.elements.prompt.value = "";
+    var formData = new FormData(promptForm);
+    formData.append('prompt', prompt);
 
-                try {
-                    const response = await fetch('{{url_for('landing')}}', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const reader = response.body.getReader();
+    promptForm.elements.prompt.value = "";
 
-                    var aiMessageElement = document.createElement("p");
-                    aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
-                    aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
-                    resultContainer.appendChild(aiMessageElement);
+    try {
+        const response = await fetch('{{url_for('landing')}}', {
+            method: 'POST',
+            body: formData
+        });
+        const reader = response.body.getReader();
 
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        const text = new TextDecoder().decode(value);
-                        aiMessageElement.textContent += text;
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
-            });
+        var aiMessageElement = document.createElement("p");
+        aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
+        aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
+        resultContainer.appendChild(aiMessageElement);
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const text = new TextDecoder().decode(value);
+            aiMessageElement.textContent += text;
+        }
+        scrollToBottom(); // Scroll after AI response is completely loaded
+    } catch (error) {
+        console.error(error);
+    }
+});
 
     </script>
 </div>
