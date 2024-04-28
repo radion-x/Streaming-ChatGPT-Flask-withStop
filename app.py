@@ -41,7 +41,7 @@ def landing():
                 {"role": "user", "content": f'{prompt}'},
             ],
             temperature=0,
-            model='gpt-3.5-turbo',
+            model='gpt-4-turbo',
             stream=True
         )
         for chunk in response:
