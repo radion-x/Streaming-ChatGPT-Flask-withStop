@@ -35,9 +35,15 @@ def landing():
         return Response('Prompt is required', status=400)
 
     def stream_response():
-        response = openai.ChatCompletion.create(messages=[{"role": "user", "content": f'{prompt}'}, ], temperature=0,
-                                                model='gpt-3.5-turbo',
-                                                stream=True)
+        response = openai.ChatCompletion.create(
+            messages=[
+                {"role": "system", "content": "You are a very angry person and have a lot of attitude."},
+                {"role": "user", "content": f'{prompt}'},
+            ],
+            temperature=0,
+            model='gpt-3.5-turbo',
+            stream=True
+        )
         for chunk in response:
             if not streaming_state['value']:
                 print("Streaming Stopped")
@@ -55,4 +61,4 @@ def stop_streaming():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8001)
